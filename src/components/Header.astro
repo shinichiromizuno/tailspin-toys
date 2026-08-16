@@ -47,7 +47,7 @@ import Menu from '../assets/icons/menu.svg';
   const menu = document.getElementById('menu');
   const highContrastToggle = document.getElementById('high-contrast-toggle');
 
-  const applyHighContrast = (enabled) => {
+  const applyHighContrast = (enabled: boolean) => {
     docRoot.classList.toggle('high-contrast', enabled);
     if (highContrastToggle) {
       highContrastToggle.classList.toggle('high-contrast-mode', enabled);

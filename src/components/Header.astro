@@ -3,7 +3,7 @@ import Menu from '../assets/icons/menu.svg';
 ---
 
 <header class="bg-blue-500 dark:bg-blue-700 text-white p-4 shadow-md transition-colors duration-300">
-  <div class="container mx-auto flex justify-between items-center pl-4 pr-4">
+  <div class="container mx-auto flex justify-between items-center pl-4 pr-4 gap-3">
     <div class="flex items-center">
       <div class="relative group">
         <button id="menu-toggle" class="focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-500 rounded mr-4" aria-label="Toggle menu" aria-expanded="false" aria-controls="menu">
@@ -18,14 +18,63 @@ import Menu from '../assets/icons/menu.svg';
       </div>
       <div class="text-xl font-bold"><a href="/" class="hover:underline">Tailspin Toys</a></div>
     </div>
+
+    <button
+      id="high-contrast-toggle"
+      type="button"
+      aria-pressed="false"
+      aria-label="Enable high contrast mode"
+      data-testid="high-contrast-toggle"
+      class="group inline-flex items-center gap-3 rounded-full border border-blue-200 bg-white px-2 py-1.5 text-sm font-medium text-blue-900 shadow-sm transition-all duration-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-500"
+    >
+      <span class="inline-flex items-center gap-2 rounded-full bg-slate-200 px-2 py-1 transition-colors duration-200 group-[.high-contrast-mode]:bg-blue-100">
+        <span class="text-xs font-semibold">Standard</span>
+      </span>
+      <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-300 transition-colors duration-200 group-[.high-contrast-mode]:bg-blue-600">
+        <span class="absolute left-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 group-[.high-contrast-mode]:translate-x-5"></span>
+      </span>
+      <span class="inline-flex items-center gap-2 rounded-full px-2 py-1 transition-colors duration-200 group-[.high-contrast-mode]:bg-blue-100">
+        <span class="text-xs font-semibold">High contrast</span>
+      </span>
+    </button>
   </div>
 </header>
 
 <script>
-  // Toggle menu visibility when hamburger is clicked
+  const STORAGE_KEY = 'tailspin-high-contrast';
+  const docRoot = document.documentElement;
   const menuToggle = document.getElementById('menu-toggle');
   const menu = document.getElementById('menu');
-  
+  const highContrastToggle = document.getElementById('high-contrast-toggle');
+
+  const applyHighContrast = (enabled: boolean) => {
+    docRoot.classList.toggle('high-contrast', enabled);
+    if (highContrastToggle) {
+      highContrastToggle.classList.toggle('high-contrast-mode', enabled);
+      highContrastToggle.setAttribute('aria-pressed', String(enabled));
+      highContrastToggle.setAttribute('aria-label', enabled ? 'Switch to standard mode' : 'Switch to high contrast mode');
+    }
+
+    try {
+      localStorage.setItem(STORAGE_KEY, String(enabled));
+    } catch {
+      // Ignore storage access errors in restricted environments
+    }
+  };
+
+  try {
+    const storedValue = localStorage.getItem(STORAGE_KEY) === 'true';
+    applyHighContrast(storedValue);
+  } catch {
+    applyHighContrast(false);
+  }
+
+  if (highContrastToggle) {
+    highContrastToggle.addEventListener('click', () => {
+      applyHighContrast(!docRoot.classList.contains('high-contrast'));
+    });
+  }
+
   if (menuToggle && menu) {
     menuToggle.addEventListener('click', () => {
       menu.classList.toggle('hidden');
@@ -36,8 +85,7 @@ import Menu from '../assets/icons/menu.svg';
         if (firstLink) firstLink.focus();
       }
     });
-    
-    // Close menu when clicking outside
+
     document.addEventListener('click', (event) => {
       const target = event.target;
       const isClickInside = target instanceof Node && (menuToggle.contains(target) || menu.contains(target));
@@ -47,7 +95,6 @@ import Menu from '../assets/icons/menu.svg';
       }
     });
 
-    // Close menu with Escape key and return focus to toggle button
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && !menu.classList.contains('hidden')) {
         menu.classList.add('hidden');

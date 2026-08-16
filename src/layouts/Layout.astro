@@ -17,6 +17,16 @@ const { title = "Tailspin Toys" } = Astro.props;
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="generator" content={Astro.generator} />
         <title>{title}</title>
+        <script is:inline>
+            (() => {
+                try {
+                    const prefersHighContrast = localStorage.getItem('tailspin-high-contrast') === 'true';
+                    document.documentElement.classList.toggle('high-contrast', prefersHighContrast);
+                } catch {
+                    // Ignore localStorage access errors in restricted environments
+                }
+            })();
+        </script>
         <!-- Preconnect to improve font loading -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

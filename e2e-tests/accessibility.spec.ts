@@ -188,6 +188,23 @@ test.describe('Accessibility Tests', () => {
     expect(contrastViolations).toEqual([]);
   });
 
+  test('high contrast toggle - should persist across reload', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="games-grid"]', { timeout: 10000 });
+
+    const toggle = page.getByTestId('high-contrast-toggle');
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+    await toggle.click();
+    await expect(page.locator('html')).toHaveClass(/high-contrast/);
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+
+    await page.reload();
+    await expect(page.locator('html')).toHaveClass(/high-contrast/);
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  });
+
   test('semantic HTML - main landmarks should be present', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('[data-testid="games-grid"]', { timeout: 10000 });

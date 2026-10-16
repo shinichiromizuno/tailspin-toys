@@ -19,6 +19,20 @@ const games = await getAllGames(getDatabase());
     />
 
     <div>
+      <div class="mb-6 flex gap-4 items-end">
+        <div>
+          <label class="block text-sm text-slate-300 mb-1" for="publisher">Publisher</label>
+          <select id="publisher" data-testid="publisher-filter" class="rounded-md bg-slate-700 text-slate-100 p-2">
+            <option value="">All</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-300 mb-1" for="category">Category</label>
+          <select id="category" data-testid="category-filter" class="rounded-md bg-slate-700 text-slate-100 p-2">
+            <option value="">All</option>
+          </select>
+        </div>
+      </div>
       <h2 class="text-2xl font-medium mb-6 text-slate-100">Featured Games</h2>
 
       {games.length === 0 ? (
@@ -30,4 +44,60 @@ const games = await getAllGames(getDatabase());
       )}
     </div>
   </div>
+      <script>
+    (function () {
+      function initFilters() {
+        const pub = document.querySelector('[data-testid="publisher-filter"]');
+        const cat = document.querySelector('[data-testid="category-filter"]');
+        const cards = Array.from(document.querySelectorAll('[data-testid="game-card"]'));
+        if (!pub || !cat) return;
+
+        // Build unique publisher/category lists from rendered cards
+        const publishers = new Map();
+        const categories = new Map();
+        cards.forEach((c) => {
+          const pid = c.getAttribute('data-game-publisher-id') || '';
+          const pname = c.querySelector('[data-testid="game-publisher"]')?.textContent || '';
+          if (pid) publishers.set(pid, pname);
+          const cid = c.getAttribute('data-game-category-id') || '';
+          const cname = c.querySelector('[data-testid="game-category"]')?.textContent || '';
+          if (cid) categories.set(cid, cname);
+        });
+
+        for (const [id, name] of publishers) {
+          const opt = document.createElement('option');
+          opt.value = id;
+          opt.textContent = name;
+          pub.appendChild(opt);
+        }
+
+        for (const [id, name] of categories) {
+          const opt = document.createElement('option');
+          opt.value = id;
+          opt.textContent = name;
+          cat.appendChild(opt);
+        }
+
+        function applyFilter() {
+          const pv = pub.value;
+          const cv = cat.value;
+          cards.forEach((c) => {
+            const pid = c.getAttribute('data-game-publisher-id') || '';
+            const cid = c.getAttribute('data-game-category-id') || '';
+            const matchPub = !pv || pv === pid;
+            const matchCat = !cv || cv === cid;
+            c.style.display = matchPub && matchCat ? '' : 'none';
+          });
+        }
+        pub.addEventListener('change', applyFilter);
+        cat.addEventListener('change', applyFilter);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initFilters);
+      } else {
+        initFilters();
+      }
+    })();
+  </script>
 </Layout>
